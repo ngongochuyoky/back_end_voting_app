@@ -5,25 +5,22 @@ class Authentication {
     //Tạo mới Token
     generateAccessToken(data) {
         const token = jwt.sign(data, process.env.TOKEN_SECRET, { expiresIn: '86400s' });
-        return token
+        return token;
     }
 
     //Xác thực Token
     authenticateToken(req, res, next) {
-        const authHeader = req.headers['Authorization'];
-        const token = authHeader && authHeader.split(' ')[1];
+        const authHeader = req.headers['authorization'];
+        const token = authHeader && authHeader.split(' ')[1];        
 
-        if (token === null) res.status(401).json({
-            message: 'Token is null'
-        })
+        if (token === null) res.json({ message: 'Token is null', data: null, status: 'error' });
+
         jwt.verify(token, process.env.TOKEN_SECRET, (err, decoded) => {
-            if (err) res.status(403).json({
-                message: 'Invalid token'
-            })
-            req.id = decoded._id
-            next()
-          })
+            if (err) res.json({ message: 'Invalid token', data: null, status: 'error' });
+            req.id = decoded._id;
+            next();
+        });
     }
 }
 
-module.exports = new Authentication
+module.exports = new Authentication();

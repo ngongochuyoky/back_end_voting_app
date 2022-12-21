@@ -6,23 +6,19 @@ const Schema = mongoose.Schema;
 const Voter = new Schema({
     full_name: {
         type: String,
-        require: true,
+        required: true,
     },
     email: {
         type: String,
-        require: true,
+        required: true,
     },
     password: {
         type: String,
-        require: true,
-    },
-    avatar: {
-        type: String,
-        default: 'http://localhost:3001/images/anh1.jpg',
+        required: true,
     },
     election_address: {
         type: String,
-        // require: true
+        required: true
     },
     created: {
         type: Date,

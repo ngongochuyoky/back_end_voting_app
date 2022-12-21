@@ -4,7 +4,7 @@ require('dotenv').config();
 
 class CandidateController {
     sendMailNotification(req, res, next) {
-        const subject = 'Thông báo đăng kí ứng cử viên tại '+ req.body.electionName;
+        const subject = 'Thông báo đăng kí ứng viên tại '+ req.body.electionName;
         const htmlContent = `<span style="color:green; font-size: 16px">Chúc mừng bạn được đăng kí là ứng cử viên cho vị trí: </span > 
             <span style="font-weight: bold;"> 
                 ${req.body.positionName} 

@@ -6,15 +6,15 @@ const Schema = mongoose.Schema;
 const Company = new Schema({
     email: {
         type: String,
-        require: true,
+        required: true,
     },
     password: {
         type: String,
-        require: true,
+        required: true,
     },
     company_name: {
         type: String,
-        require: true
+        required: true
     },
     created: {
         type: Date,

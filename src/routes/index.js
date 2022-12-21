@@ -4,9 +4,9 @@ const companyRouter = require('./company');
 const candidateRouter = require('./candidate');
 
 function routes(app) {
-  app.use('/voter', voterRouter);
-  app.use('/company', companyRouter);
-  app.use('/candidate', candidateRouter);
+  app.use('/api/voter', voterRouter);
+  app.use('/api/company', companyRouter);
+  app.use('/api/candidate', candidateRouter);
   app.use('/', siteRouter);
 
 }
