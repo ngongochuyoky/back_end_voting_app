@@ -3,6 +3,8 @@ const sendMail = require('../utils/mailer');
 require('dotenv').config();
 
 class CandidateController {
+    //send Mail Notification for a candidate
+    //[POST] /candidate/senMailNotification
     sendMailNotification(req, res, next) {
         const subject = 'Thông báo đăng kí ứng viên tại '+ req.body.electionName;
         const htmlContent = `<span style="color:green; font-size: 16px">Chúc mừng bạn được đăng kí là ứng cử viên cho vị trí: </span > 

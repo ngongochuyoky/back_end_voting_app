@@ -3,6 +3,7 @@ const mailConfig = require('../config/mail');
 
 function sendMail(to, subject, htmlContent) {
     return new Promise((resolve, reject) => {
+        console.log(to)
         const transport = nodeMailer.createTransport({
             service: 'gmail',
             host: mailConfig.HOST,

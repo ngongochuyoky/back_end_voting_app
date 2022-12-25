@@ -5,12 +5,14 @@ const voterController = require('../controllers/VoterController.js');
 const authentication = require('../middleware/Authentication');
 
 
-router.post('/login', voterController.login);
-// router.get('/:slug', voterController.show);
-router.post('/register', authentication.authenticateToken, voterController.create);
-router.post('/update', authentication.authenticateToken, voterController.updateVoter); 
-router.post('/delete', authentication.authenticateToken, voterController.removeVoter); 
-router.post('/resultMail', authentication.authenticateToken, voterController.resultMail); 
 router.get('/', authentication.authenticateToken, voterController.index);
+router.get('/trash', authentication.authenticateToken, voterController.trash);
+router.get('/:id/show', authentication.authenticateToken, voterController.show);
+router.post('/login', voterController.login);
+router.post('/register', authentication.authenticateToken, voterController.create);
+router.put('/:id', authentication.authenticateToken, voterController.update); 
+router.delete('/:id', authentication.authenticateToken, voterController.delete); 
+router.post('/resultMail', authentication.authenticateToken, voterController.resultMail); 
+router.patch('/:id/restore', authentication.authenticateToken, voterController.restore); 
 
 module.exports = router;

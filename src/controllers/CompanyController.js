@@ -3,59 +3,62 @@ const authorization = require('../middleware/Authentication');
 const bcrypt = require('bcrypt');
 
 class CompanyController {
-    //Đăng nhập với tài khoản Company
-    login(req, res, next) {
-        Company.findOne({
-            email: req.body.email,
-        })
-            .then((company) => {
-                if (company) {
-                    if (bcrypt.compareSync(req.body.password, company.password) && req.body.email === company.email) {
-                        res.json({
-                            status: 'success',
-                            message: 'company found',
-                            data: {
-                                email: company.email,
-                                token: authorization.generateAccessToken({
-                                    _id: company._id,
-                                }),
-                            },
-                        });
-                    } else {
-                        res.json({ status: 'error', message: 'Invalid email/password!!!', data: null });
-                    }
-                } else {
-                    res.json({ status: 'error', message: 'Account does not exist!!!', data: null });
-                }
-            })
-            .catch((err) => {
-                res.status(500).json({ message: err.message });
+    //[GET] /company/:id
+    async show(req, res, next) {
+        try {
+            const company = await Company.findById(req.params.id);
+            res.json({
+                data: company,
             });
+        } catch (err) {
+            res.status(500).json(err.message);
+        }
+    }
+    //Đăng nhập với tài khoản Company
+    //[POST] /company/login
+    async login(req, res, next) {
+        try {
+            const company = await Company.findOne({ email: req.body.email });
+            if (!company) res.json({ message: 'Account does not exist!!!', data: null });
+            else {
+                if (bcrypt.compareSync(req.body.password, company.password) && req.body.email === company.email) {
+                    res.json({
+                        data: {
+                            email: company.email,
+                            id: company._id,
+                            token: authorization.generateAccessToken({
+                                _id: company._id,
+                            }),
+                        },
+                    });
+                } else res.json({ message: 'Invalid email/password!!!', data: null });
+            }
+        } catch (err) {
+            res.status(500).json(err.message);
+        }
     }
 
     // Đăng kí tài khoản Company
-    register(req, res, next) {
-        console.log(req.body.company_name);
-        Company.create({
-            email: req.body.email,
-            password: req.body.password,
-            company_name: req.body.companyName,
-        })
-            .then((company) => {
-                res.json({
-                    status: 'success',
-                    message: 'Account created successfully',
-                    data: {
-                        company_email: company.email,
-                        token: authorization.generateAccessToken({
-                            _id: company._id,
-                        }),
-                    },
-                });
-            })
-            .catch((err) => {
-                res.status(500).json({ message: err.message });
+    //[POST] /company/register
+    async register(req, res, next) {
+        try {
+            const company = await Company.create({
+                email: req.body.email,
+                password: req.body.password,
+                company_name: req.body.companyName,
             });
+            res.json({
+                data: {
+                    company_email: company.email,
+                    id: company._id,
+                    token: authorization.generateAccessToken({
+                        _id: company._id,
+                    }),
+                },
+            });
+        } catch (err) {
+            res.status(500).json(err.message);
+        }
     }
 }
 

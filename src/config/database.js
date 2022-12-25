@@ -4,7 +4,8 @@ async function connect() {
     try {
         await mongoose.connect('mongodb://localhost:27017/VotingSystem', {
             useNewUrlParser: true,
-            useUnifiedTopology: true
+            useUnifiedTopology: true,
+            // useCreateIndex: true,//Loại bỏ warning khi đánh index
         });
         console.log('Connect successfully!!!');
     } catch (error) {
