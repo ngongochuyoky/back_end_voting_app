@@ -6,10 +6,10 @@ const saltRounds = 10;
 require('dotenv').config();
 
 class VoterController {
-    //[GET] /voter
+    //[GET] /voter/allVoter
     async index(req, res, next) {
         try {
-            const voters = await Voter.find();
+            const voters = await Voter.find({election_address: req.params.electionAddress});
             res.json({ data: voters });
         } catch (err) {
             res.status(500).json(err.message);
@@ -26,13 +26,24 @@ class VoterController {
         }
     }
 
-    //[GET] /voter/trash
+    //[GET] /voter/:electionAddress/trash
     async trash(req, res, next) {
         try {
-            const voters = await Voter.findDeleted();
+            const voters = await Voter.findDeleted({election_address: req.params.electionAddress});
             res.json({ data: voters });
         } catch (err) {
-            console.log(err);
+            res.status(500).json(err.message)
+        }
+    }
+
+    //[GET] /voter/:electionAddress/totalVoters
+    async totalVoters(req, res, next) {
+        try{
+            const votersCount = await Voter.countDocuments({election_address: req.params.electionAddress});
+            console.log(votersCount)
+            res.json({data: votersCount})
+        }catch (err){
+            console.log(err)
             res.status(500).json(err.message);
         }
     }
@@ -152,66 +163,7 @@ class VoterController {
         }
     }
 
-    //[POST] /voter/resultMail
-    async resultMail(req, res, next) {
-        try {
-            const voters = await Voter.find({ election_address: req.body.electionAddress });
-            for (const voter of voters) {
-                const subject = `Thông báo kết quả cuộc bầu chọn ${req.body.electionName}`;
-                const htmlContent = `<p style="color:green; font-size: 16px">Kết quả bầu chọn các ứng viên
-                cho các vị trí </p > 
-                        <p>
-                            Tại cuộc bầu chọn: <span style="font-weight: bold;">${req.body.electionName} </span>
-                        </p>
-                        ${req.body.winners.map(
-                            (winner, index) =>
-                                `<div>
-                                <p>Vị trí: <span style="font-weight: 600">${winner.positionName}</span></p> 
-                                <p>Người chiến thắng: <span style="font-weight: 600">${winner.candidateName}</span>
-                                    Với số phiếu được bầu là: ${winner.voteCount}
-                                </p>
-                                <p>Thông tin liên hệ: <span style="font-weight: 600">${winner.email}</span></p>
-                                <p>----------------------------------------------------------------</p>
-                            </div>`,
-                        )}
-                        <p>
-                            Đăng nhập tại website: <a href=${process.env.FONTEND_URL}>${process.env.FONTEND_URL}</a>
-                        </p>`;
-                await sendMail(voter.email, subject, htmlContent);
-            }
-            for (const winner of req.body.winners) {
-                const subject = `Thông báo kết quả cuộc bầu chọn ${req.body.electionName}`;
-                const htmlContent = `<p style="color:green; font-size: 16px">Chúc mừng bạn đã được bầu làm: ${
-                    winner.positionName
-                }</p > 
-                        <p>
-                            Kết quả tại cuộc bầu chọn: <span style="font-weight: bold;">${req.body.electionName} </span>
-                        </p>
-                        ${req.body.winners.map(
-                            (winner, index) =>
-                                `<div>
-                                <p>Vị trí: <span style="font-weight: 600">${winner.positionName}</span></p> 
-                                <p>Người chiến thắng: <span style="font-weight: 600">${winner.candidateName}</span>
-                                    Với số phiếu được bầu là: ${winner.voteCount}
-                                </p>
-                                <p>Thông tin liên hệ: <span style="font-weight: 600">${winner.email}</span></p>
-                                <p>----------------------------------------------------------------</p>
-                            </div>`,
-                        )}
-                        <p>
-                            Đăng nhập tại website: <a href=${process.env.FONTEND_URL}>${process.env.FONTEND_URL}</a>
-                        </p>`;
-                await sendMail(winner.email, subject, htmlContent);
-            }
-            res.json({
-                status: 'success',
-                message: 'Result Mail sent successfully',
-                data: null,
-            });
-        } catch (err) {
-            res.status(500).json(err.message);
-        }
-    }
+    
 }
 
 module.exports = new VoterController();
