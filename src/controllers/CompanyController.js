@@ -2,6 +2,7 @@ const Company = require('../models/company');
 const Voter = require('../models/voter');
 const authorization = require('../middleware/Authentication');
 const bcrypt = require('bcrypt');
+const sendMail = require('../utils/mailer');
 
 class CompanyController {
     //[GET] /company/:id
@@ -50,7 +51,7 @@ class CompanyController {
             });
             res.json({
                 data: {
-                    company_email: company.email,
+                    email: company.email,
                     id: company._id,
                     token: authorization.generateAccessToken({
                         _id: company._id,
@@ -63,6 +64,7 @@ class CompanyController {
     }
     //[POST] /voter/resultMail
     async resultMail(req, res, next) {
+        console.log(req.body)
         try {
             const voters = await Voter.find({ election_address: req.body.electionAddress });
             for (const voter of voters) {
@@ -76,7 +78,7 @@ class CompanyController {
                             (winner, index) =>
                                 `<div>
                                 <p>Vị trí: <span style="font-weight: 600">${winner.positionName}</span></p> 
-                                <p>Người chiến thắng: <span style="font-weight: 600">${winner.candidateName}</span>
+                                <p>Người chiến thắng: <span style="font-weight: 600">${winner.name}</span>
                                     Với số phiếu được bầu là: ${winner.voteCount}
                                 </p>
                                 <p>Thông tin liên hệ: <span style="font-weight: 600">${winner.email}</span></p>
@@ -104,7 +106,7 @@ class CompanyController {
                             (winner, index) =>
                                 `<div>
                                 <p>Vị trí: <span style="font-weight: 600">${winner.positionName}</span></p> 
-                                <p>Người chiến thắng: <span style="font-weight: 600">${winner.candidateName}</span>
+                                <p>Người chiến thắng: <span style="font-weight: 600">${winner.name}</span>
                                     Với số phiếu được bầu là: ${winner.voteCount}
                                 </p>
                                 <p>Thông tin liên hệ: <span style="font-weight: 600">${winner.email}</span></p>

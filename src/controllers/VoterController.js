@@ -40,10 +40,8 @@ class VoterController {
     async totalVoters(req, res, next) {
         try{
             const votersCount = await Voter.countDocuments({election_address: req.params.electionAddress});
-            console.log(votersCount)
             res.json({data: votersCount})
         }catch (err){
-            console.log(err)
             res.status(500).json(err.message);
         }
     }
@@ -85,9 +83,10 @@ class VoterController {
     async create(req, res, next) {
         try {
             //Create a new voter account - email unique
+            var password = Math.random().toString(36).slice(-8);
             const voter = await Voter.create({
                 email: req.body.email,
-                password: req.body.password,
+                password: password,
                 full_name: req.body.fullName,
                 election_address: req.body.electionAddress,
             });
@@ -101,7 +100,7 @@ class VoterController {
                             </p>
                             <p>Tài khoản đăng nhập của bạn là:</p>
                             <p>Username: <span style="font-weight: 600">${req.body.email}</span></p>
-                            <p>Password: <span style="font-weight: 600">${req.body.password}</span></p>
+                            <p>Password: <span style="font-weight: 600">${password}</span></p>
                             <p>
                                 Đăng nhập tại website: <a href=${process.env.FONTEND_URL}>${process.env.FONTEND_URL}</a>
                             </p>`;
