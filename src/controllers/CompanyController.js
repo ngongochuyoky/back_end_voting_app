@@ -1,8 +1,11 @@
 const Company = require('../models/company');
+const Key = require('../models/key');
 const Voter = require('../models/voter');
 const authorization = require('../middleware/Authentication');
 const bcrypt = require('bcrypt');
 const sendMail = require('../utils/mailer');
+require('dotenv').config();
+
 
 class CompanyController {
     //[GET] /company/:id
@@ -19,13 +22,14 @@ class CompanyController {
     //Đăng nhập với tài khoản Company
     //[POST] /company/login
     async login(req, res, next) {
+        console.log(req.body)
         try {
             const company = await Company.findOne({ email: req.body.email });
             if (!company) res.json({ message: 'Account does not exist!!!', data: null });
             else {
                 if (bcrypt.compareSync(req.body.password, company.password) && req.body.email === company.email) {
                     res.json({
-                        data: {
+                        data: { 
                             email: company.email,
                             id: company._id,
                             token: authorization.generateAccessToken({
@@ -43,6 +47,7 @@ class CompanyController {
     // Đăng kí tài khoản Company
     //[POST] /company/register
     async register(req, res, next) {
+        
         try {
             const company = await Company.create({
                 email: req.body.email,
@@ -129,6 +134,8 @@ class CompanyController {
             res.status(500).json(err.message);
         }
     }
+
+   
 }
 
 module.exports = new CompanyController();

@@ -6,8 +6,18 @@ const saltRounds = 10;
 require('dotenv').config();
 
 class VoterController {
-    //[GET] /voter/allVoter
+    //[GET] /voter/
     async index(req, res, next) {
+        try {
+            const voters = await Voter.find();
+            res.json({ data: voters });
+        } catch (err) {
+            res.status(500).json(err.message);
+        }
+    }
+
+    //[GET] /voter/search
+    async search(req, res, next) {
         try {
             const voters = await Voter.find({election_address: req.params.electionAddress});
             res.json({ data: voters });
@@ -15,6 +25,9 @@ class VoterController {
             res.status(500).json(err.message);
         }
     }
+
+
+    
 
     //[GET] /voter/:id
     async show(req, res, next) {
@@ -36,15 +49,7 @@ class VoterController {
         }
     }
 
-    //[GET] /voter/:electionAddress/totalVoters
-    async totalVoters(req, res, next) {
-        try{
-            const votersCount = await Voter.countDocuments({election_address: req.params.electionAddress});
-            res.json({data: votersCount})
-        }catch (err){
-            res.status(500).json(err.message);
-        }
-    }
+    
 
     //[PATCH] /voter/:id/restore
     async restore(req, res, next) {
@@ -53,6 +58,29 @@ class VoterController {
             res.json({ data: result });
         } catch (err) {
             res.status(500).json(err.message);
+        }
+    }
+
+    // [POST] /voter/register
+   
+    async register(req, res, next) {
+        console.log(req.body.fullName)
+        try {
+            //Create a new voter account - email unique
+            const voter = await Voter.create({
+                email: req.body.email,
+                password: req.body.password,
+                full_name: req.body.fullName,
+            });
+            res.json({ data: {
+                email: voter.email,
+                id: voter._id,
+                token: authorization.generateAccessToken({ _id: voter._id }),
+            }, });
+            
+        } catch (err) {
+            res.status(500).json(err.message);
+            console.log(err.message)
         }
     }
 
