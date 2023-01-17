@@ -19,10 +19,6 @@ const Voter = new Schema(
             type: String,
             required: true,
         },
-        election_address: {
-            type: String,
-            required: true,
-        },
     },
     { timestamps: true },
 );
