@@ -22,7 +22,6 @@ class CompanyController {
     //Đăng nhập với tài khoản Company
     //[POST] /company/login
     async login(req, res, next) {
-        console.log(req.body)
         try {
             const company = await Company.findOne({ email: req.body.email });
             if (!company) res.json({ message: 'Account does not exist!!!', data: null });

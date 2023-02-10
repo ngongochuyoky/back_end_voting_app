@@ -4,10 +4,11 @@ const router = express.Router();
 const companyController = require('../controllers/CompanyController');
 const authentication = require('../middleware/Authentication');
 
-
-router.get('/:id', companyController.show);
 router.post('/register', companyController.register);
 router.post('/login', companyController.login);
-router.post('/resultMail', authentication.authenticateToken, companyController.resultMail); 
+
+router.use(authentication.authenticateToken);
+router.get('/:id', companyController.show);
+router.post('/resultMail', companyController.resultMail);
 
 module.exports = router;

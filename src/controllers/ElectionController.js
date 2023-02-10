@@ -27,8 +27,8 @@ class ElectionController {
         }
     }
 
-     //[GET] '/election/:voterId/searchByCompanyId'
-     async searchByCompanyId(req, res, next) {
+    //[GET] '/election/:companyId/searchElection'
+    async searchElection(req, res, next) {
         try {
             const election = await Election.findOne({ company: req.params.companyId });
             res.json({
@@ -40,8 +40,8 @@ class ElectionController {
         }
     }
 
-     //[GET] '/election/:voterId/searchByCompanyId'
-     async searchByElectionAddress(req, res, next) {
+    //[GET] '/election/:voterId/searchByCompanyId'
+    async searchByElectionAddress(req, res, next) {
         try {
             const election = await Election.findOne({ election_address: req.params.electionAddress });
             res.json({
@@ -56,18 +56,18 @@ class ElectionController {
     //[POST] '/election/create'
     async create(req, res, next) {
         try {
-            
-                const election = await Election.create({
-                    company: req.body.companyId,
-                    election_address: req.body.electionAddress,
-                });
-                res.json({
-                    status: 'success',
-                    data: election,
-                });
-            
+            const election = await Election.create({
+                company: req.body.companyId,
+                election_address: req.body.electionAddress,
+            });
+            res.json({
+                status: 'success',
+                data: election,
+            });
         } catch (err) {
-            res.status(500).json(err.message);
+            res.status(500);
+            next(err);
+            // res.status(500).json(err.message);
         }
     }
 
@@ -88,24 +88,24 @@ class ElectionController {
         }
     }
 
+    // [PATCH]  '/api/election/:companyId/updateTimeStart
     async updateTimeStart(req, res, next) {
-        console.log('time:::::',req.body.timeOut)
-        try{
+        try {
             const election = await Election.findOneAndUpdate(
-                { company: req.params.companyId},{
+                { company: req.params.companyId },
+                {
                     startTime: Date.now(),
-                    time: new Date(req.body.timeOut)
-                }
+                    time: new Date(req.body.timeOut),
+                },
             );
             res.json({
                 status: 'success',
-                data: election
-            })
-        }catch(err) {
-            res.status(500).json(err.message)
+                data: election,
+            });
+        } catch (err) {
+            res.status(500).json(err.message);
         }
     }
-   
 }
 
 module.exports = new ElectionController();

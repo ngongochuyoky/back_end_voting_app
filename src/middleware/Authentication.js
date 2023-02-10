@@ -11,14 +11,14 @@ class Authentication {
     //Xác thực Token
     authenticateToken(req, res, next) {
         const authHeader = req.headers['authorization'];
-        const token = authHeader && authHeader.split(' ')[1];        
-
-        if (token === null) res.json({ message: 'Token is null', data: null, status: 'error' });
-
+        const token = authHeader && authHeader.split(' ')[1];
         jwt.verify(token, process.env.TOKEN_SECRET, (err, decoded) => {
-            if (err) res.json({ message: 'Invalid token', data: null, status: 'error' });
-            req.id = decoded._id;
-            next();
+            if (err) {
+                console.log(err.message);
+                res.json({ message: 'Invalid token', data: null, status: 'error' });
+                
+            }
+            else next();
         });
     }
 }
