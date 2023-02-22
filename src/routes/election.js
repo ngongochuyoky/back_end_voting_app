@@ -3,14 +3,53 @@ const express = require('express');
 const router = express.Router();
 const authentication = require('../middleware/Authentication');
 const electionController = require('../controllers/ElectionController');
+const { validateBody, validateParams } = require('../middleware/ValidationMiddleware');
+const electionSchema = require('../middleware/validation/election');
+const pathParameter = require('../middleware/validation/pathParameter');
 
-router.use(authentication.authenticateToken);
-router.get('/:voterId/searchByVoterId', electionController.searchByVoterId);
-router.get('/:companyId/searchElection', electionController.searchElection);
-router.get('/:companyId/voterList', electionController.voterList);
-router.get('/:electionAddress/searchByElectionAddress', electionController.searchByElectionAddress);
-router.patch('/:companyId/voters', electionController.updateVoters);
-router.patch('/:companyId/updateTimeStart', electionController.updateTimeStart);
-router.post('/create', electionController.create);
+router.get(
+    '/:voterId/searchByVoterId',
+    authentication.authenticateToken,
+    validateParams(pathParameter.pathVoterIdSchema),
+    electionController.searchByVoterId,
+);
+router.get(
+    '/:companyId/searchElection',
+    authentication.authenticateToken,
+    validateParams(pathParameter.pathCompanyIdSchema),
+    electionController.searchElection,
+);
+router.get(
+    '/:companyId/voterList',
+    authentication.authenticateToken,
+    validateParams(pathParameter.pathCompanyIdSchema),
+    electionController.voterList,
+);
+router.get(
+    '/:electionAddress/searchByElectionAddress',
+    authentication.authenticateToken,
+    validateParams(pathParameter.pathElectionAddressSchema),
+    electionController.searchByElectionAddress,
+);
+router.patch(
+    '/:companyId/voters',
+    authentication.authenticateToken,
+    validateParams(pathParameter.pathCompanyIdSchema),
+    validateBody(electionSchema.updateVotersSchema),
+    electionController.updateVoters,
+);
+router.patch(
+    '/:companyId/updateTimeStart',
+    authentication.authenticateToken,
+    validateParams(pathParameter.pathCompanyIdSchema),
+    validateBody(electionSchema.updateTimeStartSchema),
+    electionController.updateTimeStart,
+);
+router.post(
+    '/create',
+    authentication.authenticateToken,
+    validateBody(electionSchema.createSchema),
+    electionController.create,
+);
 
 module.exports = router;

@@ -1,16 +1,15 @@
 const Election = require('../models/election');
+const { formatSuccess } = require('../lib/response');
+
 
 class ElectionController {
     // [GET] '/election/:companyId/voterList'
     async voterList(req, res, next) {
         try {
             const election = await Election.findOne({ company: req.params.companyId }).populate('voters');
-            res.json({
-                status: 'success',
-                data: election.voters,
-            });
+            res.json(formatSuccess(election.voters));
         } catch (err) {
-            res.status(500).json(err.message);
+            next(err);
         }
     }
 
@@ -18,12 +17,9 @@ class ElectionController {
     async searchByVoterId(req, res, next) {
         try {
             const elections = await Election.find({ voters: req.params.voterId }).populate('company');
-            res.json({
-                status: 'success',
-                data: elections,
-            });
+            res.json(formatSuccess(elections));
         } catch (err) {
-            res.status(500).json(err.message);
+            next(err);
         }
     }
 
@@ -31,12 +27,9 @@ class ElectionController {
     async searchElection(req, res, next) {
         try {
             const election = await Election.findOne({ company: req.params.companyId });
-            res.json({
-                status: 'success',
-                data: election,
-            });
+            res.json(formatSuccess(election));
         } catch (err) {
-            res.status(500).json(err.message);
+            next(err);
         }
     }
 
@@ -44,12 +37,9 @@ class ElectionController {
     async searchByElectionAddress(req, res, next) {
         try {
             const election = await Election.findOne({ election_address: req.params.electionAddress });
-            res.json({
-                status: 'success',
-                data: election,
-            });
+            res.json(formatSuccess(election));
         } catch (err) {
-            res.status(500).json(err.message);
+            next(err);
         }
     }
 
@@ -60,14 +50,9 @@ class ElectionController {
                 company: req.body.companyId,
                 election_address: req.body.electionAddress,
             });
-            res.json({
-                status: 'success',
-                data: election,
-            });
+            res.json(formatSuccess(election));
         } catch (err) {
-            res.status(500);
             next(err);
-            // res.status(500).json(err.message);
         }
     }
 
@@ -79,12 +64,9 @@ class ElectionController {
                 { company: req.params.companyId },
                 { voters: req.body.voters },
             );
-            res.json({
-                status: 'success',
-                data: election,
-            });
+            res.json(formatSuccess(election));
         } catch (err) {
-            res.status(500).json(err.message);
+            next(err);
         }
     }
 
@@ -98,12 +80,9 @@ class ElectionController {
                     time: new Date(req.body.timeOut),
                 },
             );
-            res.json({
-                status: 'success',
-                data: election,
-            });
+            res.json(formatSuccess(election));
         } catch (err) {
-            res.status(500).json(err.message);
+            next(err);
         }
     }
 }

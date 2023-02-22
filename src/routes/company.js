@@ -3,12 +3,19 @@ const router = express.Router();
 
 const companyController = require('../controllers/CompanyController');
 const authentication = require('../middleware/Authentication');
+const companySchema = require('../middleware/validation/company');
+const { pathIdSchema } = require('../middleware/validation/pathParameter');
+const { validateBody, validateParams } = require('../middleware/ValidationMiddleware');
 
-router.post('/register', companyController.register);
-router.post('/login', companyController.login);
+router.post('/register', validateBody(companySchema.registerSchema), companyController.register);
+router.post('/login', validateBody(companySchema.loginSchema), companyController.login);
 
-router.use(authentication.authenticateToken);
-router.get('/:id', companyController.show);
-router.post('/resultMail', companyController.resultMail);
+router.get('/:id', authentication.authenticateToken, validateParams(pathIdSchema), companyController.show);
+router.post(
+    '/resultMail',
+    authentication.authenticateToken,
+    validateBody(companySchema.resultMailSchema),
+    companyController.resultMail,
+);
 
 module.exports = router;

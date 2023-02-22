@@ -2,6 +2,9 @@ const Voter = require('../models/voter');
 const authorization = require('../middleware/Authentication');
 const bcrypt = require('bcrypt');
 const sendMail = require('../utils/mailer');
+const { formatSuccess } = require('../lib/response');
+const createError = require('../lib/error/errorFactory');
+const commonError = require('../lib/error/commonError');
 const saltRounds = 10;
 require('dotenv').config();
 
@@ -10,61 +13,55 @@ class VoterController {
     async index(req, res, next) {
         try {
             const voters = await Voter.find();
-            res.json({ data: voters });
+            res.json(formatSuccess(voters));
         } catch (err) {
-            res.status(500).json(err.message);
+            next(err);
         }
     }
 
     //[GET] /voter/search
     async search(req, res, next) {
         try {
-            const voters = await Voter.find({election_address: req.params.electionAddress});
-            res.json({ data: voters });
+            const voters = await Voter.find({ election_address: req.params.electionAddress });
+            res.json(formatSuccess(voters));
         } catch (err) {
-            res.status(500).json(err.message);
+            next(err);
         }
     }
-
-
-    
 
     //[GET] /voter/:id
     async show(req, res, next) {
         try {
             const voter = await Voter.findOne({ _id: req.params.id });
-            res.json({ data: voter });
+            res.json(formatSuccess(voter));
         } catch (err) {
-            res.status(500).json(err.message);
+            next(err);
         }
     }
 
     //[GET] /voter/:electionAddress/trash
     async trash(req, res, next) {
         try {
-            const voters = await Voter.findDeleted({election_address: req.params.electionAddress});
-            res.json({ data: voters });
+            const voters = await Voter.findDeleted({ election_address: req.params.electionAddress });
+            res.json(formatSuccess(voters));
         } catch (err) {
-            res.status(500).json(err.message)
+            next(err);
         }
     }
-
-    
 
     //[PATCH] /voter/:id/restore
     async restore(req, res, next) {
         try {
             const result = await Voter.restore({ _id: req.params.id });
-            res.json({ data: result });
+            res.json(formatSuccess(result));
         } catch (err) {
-            res.status(500).json(err.message);
+            next(err);
         }
     }
 
     // [POST] /voter/register
-   
+
     async register(req, res, next) {
-        console.log(req.body.fullName)
         try {
             //Create a new voter account - email unique
             const voter = await Voter.create({
@@ -72,15 +69,15 @@ class VoterController {
                 password: req.body.password,
                 full_name: req.body.fullName,
             });
-            res.json({ data: {
-                email: voter.email,
-                id: voter._id,
-                token: authorization.generateAccessToken({ _id: voter._id }),
-            }, });
-            
+            res.json(
+                formatSuccess({
+                    email: voter.email,
+                    id: voter._id,
+                    token: authorization.generateAccessToken({ _id: voter._id }),
+                }),
+            );
         } catch (err) {
-            res.status(500).json(err.message);
-            console.log(err.message)
+            next(err);
         }
     }
 
@@ -89,20 +86,20 @@ class VoterController {
     async login(req, res, next) {
         try {
             const voter = await Voter.findOne({ email: req.body.email });
-            if (voter) {
-                bcrypt.compareSync(req.body.password, voter.password) && req.body.email === voter.email
-                    ? res.json({
-                          data: {
-                              email: voter.email,
-                              electionAddress: voter.election_address,
-                              id: voter._id,
-                              token: authorization.generateAccessToken({ _id: voter._id }),
-                          },
-                      })
-                    : res.json({ message: 'Invalid email/password!!!', data: null });
-            } else res.json({ message: 'Voter account does not exist!!!', data: null });
+            if (!voter) throw createError(commonError.UNAUTHORIZED, { message: 'Account does not exist!!!' });
+            else {
+                if (bcrypt.compareSync(req.body.password, voter.password) && req.body.email === voter.email)
+                    res.json(
+                        formatSuccess({
+                            email: voter.email,
+                            id: voter._id,
+                            token: authorization.generateAccessToken({ _id: voter._id }),
+                        }),
+                    );
+                else throw createError(commonError.UNAUTHORIZED, { message: 'Invalid email/password!!!' });
+            }
         } catch (err) {
-            res.status(500).json(err.message);
+            next(err);
         }
     }
 
@@ -118,7 +115,7 @@ class VoterController {
                 full_name: req.body.fullName,
                 election_address: req.body.electionAddress,
             });
-            res.json({ data: voter });
+            res.json(formatSuccess(voter));
             //send email
             const subject = `Thông báo đăng kí Người bỏ phiếu tại ${req.body.electionName}`;
             const htmlContent = `<p style="color:green; font-size: 16px">Chúc mừng bạn được đăng kí là 
@@ -139,7 +136,7 @@ class VoterController {
                 console.log(err.message);
             }
         } catch (err) {
-            res.status(500).json(err.message);
+            next(err);
         }
     }
 
@@ -156,7 +153,7 @@ class VoterController {
                 { new: true },
             );
 
-            res.json({ data: voter });
+            res.json(formatSuccess(voter));
             //send Email
             const subject = `Thông báo Cập nhập tài khoản Người bỏ phiếu tại ${req.body.electionName}`;
             const htmlContent = `<p style="color:green; font-size: 16px">Cập nhập thành công tài khoản 
@@ -176,7 +173,7 @@ class VoterController {
                 console.log(err.message);
             }
         } catch (err) {
-            res.status(500).json(err.message);
+            next(err);
         }
     }
 
@@ -184,13 +181,11 @@ class VoterController {
     async delete(req, res, next) {
         try {
             const result = await Voter.deleteById(req.params.id); //soft delete
-            res.json({ data: result });
+            res.json(formatSuccess(result));
         } catch (err) {
-            res.status(500).json(err.message);
+            next(err);
         }
     }
-
-    
 }
 
 module.exports = new VoterController();

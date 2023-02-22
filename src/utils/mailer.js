@@ -1,5 +1,8 @@
 const nodeMailer = require('nodemailer');
 const mailConfig = require('../config/mail');
+const createError = require('../lib/error/errorFactory');
+const commonError = require('../lib/error/commonError');
+const {formatSuccess} = require('../lib/response'); 
 
 function sendMail(to, subject, htmlContent) {
     return new Promise((resolve, reject) => {
@@ -22,8 +25,8 @@ function sendMail(to, subject, htmlContent) {
         };
         transport.sendMail(messageOptions, (err, info) => {
             return err
-                ? reject({ status: 'error', message: 'Failure Sending Mail', data: null })
-                : resolve({ status: 'success', message: 'Email send successfully', data: null });
+                ? reject(createError(commonError.FAILED_EMAIL_SEND))
+                : resolve(formatSuccess(null, {message: 'Email send successfully'}));
         });
     });
 }

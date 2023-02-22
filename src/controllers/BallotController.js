@@ -1,9 +1,12 @@
-const Ballot = require('../models/ballot');
-const Key = require('../models/key');
 const CryptoJS = require('crypto-js');
-
 const NodeRSA = require('node-rsa');
 require('dotenv').config();
+
+const Ballot = require('../models/ballot');
+const Key = require('../models/key');
+const { formatSuccess } = require('../lib/response');
+const createError = require('../lib/error/errorFactory');
+const commonError = require('../lib/error/commonError');
 
 const rsaDecrypt = (text, key) => {
     try {
@@ -30,12 +33,34 @@ class BallotController {
     async votes(req, res, next) {
         try {
             const ballots = await Ballot.find({ company: req.params.companyId }).populate('voter');
-            res.json({
-                status: 'success',
-                data: ballots,
-            });
+            res.json(formatSuccess(ballots));
         } catch (err) {
-            res.status(500).json(err.message);
+            next(err);
+        }
+    }
+
+    // [GET] /ballot/:companyId/:voterId/searchVote
+    async searchVote(req, res, next) {
+        try {
+            const ballot = await Ballot.findOne({
+                voter: req.params.voterId,
+                company: req.params.companyId,
+            });
+            if (ballot) {
+                res.json(formatSuccess({ id: ballot._id }));
+            } else throw createError(commonError.INTERNAL_SERVER_ERROR);
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    //[GET] ballot/:companyId/numVoted/
+    async numVoted(req, res, next) {
+        try {
+            const number = await Ballot.countDocuments({ company: req.params.companyId });
+            res.json(formatSuccess({ number: number }));
+        } catch (err) {
+            next(err);
         }
     }
 
@@ -55,53 +80,13 @@ class BallotController {
                 content: criperText,
                 company: req.body.companyId,
             });
-            res.json({
-                status: 'success',
-                data: ballot,
-            });
+            res.json(formatSuccess(ballot));
         } catch (err) {
-            res.status(500).json(err.message);
+            next(err);
         }
     }
 
-    async searchVote(req, res, next) {
-        try {
-            const ballot = await Ballot.findOne({
-                voter: req.params.voterId,
-                company: req.params.companyId,
-            });
-            if (ballot) {
-                res.json({
-                    status: 'success',
-                    data: {
-                        id: ballot._id,
-                    },
-                });
-            } else {
-                res.json({
-                    status: 'error',
-                    data: null,
-                });
-            }
-        } catch (err) {
-            res.status(500).json(err.message);
-        }
-    }
-
-    async numVoted(req, res, next) {
-        try {
-            const number = await Ballot.countDocuments({ company: req.params.companyId });
-            res.json({
-                status: 'success',
-                data: {
-                    number: number,
-                },
-            });
-        } catch (err) {
-            res.status(500).json(err.message);
-        }
-    }
-
+    // [POST] ballot/:id/decryptContent
     async decryptContent(req, res, next) {
         try {
             const ballot = await Ballot.findById(req.params.id);
@@ -109,43 +94,24 @@ class BallotController {
                 company: ballot.company,
             });
 
-            const secretKey = rsaDecrypt(key.dbSecretKey, req.body.privateKey); ///đứng
+            const secretKey = rsaDecrypt(key.dbSecretKey, req.body.privateKey);
 
             if (secretKey === process.env.SECRET_KEY) {
                 const content = aesDecrypt(ballot.content, secretKey);
-                res.json({
-                    status: 'success',
-                    data: {
-                        content: JSON.parse(content),
-                        voterId: ballot.voter
-                    },
-                });
-            } else {
-                res.json({
-                    status: 'error',
-                    message: 'Wrong key!!',
-                    data: null,
-                });
-            }
+                res.json(formatSuccess({ content: JSON.parse(content), voterId: ballot.voter }));
+            } else throw createError(commonError.INTERNAL_SERVER_ERROR, { message: 'Wrong privateKey!!' });
         } catch (err) {
-            console.error(err);
-            res.status(500).json(err.message);
+            next(err);
         }
     }
 
+    // [PATCH] /ballot//:id/updateIsCheck
     async updateIsCheck(req, res, next) {
         try {
-            const ballot = await Ballot.findByIdAndUpdate(req.params.id, {
-                isCheck: true,
-            });
-            res.json({
-                status: 'success',
-                data: {
-                    ballot,
-                },
-            });
+            const ballot = await Ballot.findByIdAndUpdate(req.params.id, { isCheck: true });
+            res.json(formatSuccess(ballot));
         } catch (err) {
-            res.status(500).json(err.message);
+            next(err);
         }
     }
 }

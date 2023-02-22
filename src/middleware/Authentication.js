@@ -1,4 +1,6 @@
 const jwt = require('jsonwebtoken');
+const createError = require('../lib/error/errorFactory');
+const commonError = require('../lib/error/commonError');
 require('dotenv').config();
 
 class Authentication {
@@ -14,9 +16,7 @@ class Authentication {
         const token = authHeader && authHeader.split(' ')[1];
         jwt.verify(token, process.env.TOKEN_SECRET, (err, decoded) => {
             if (err) {
-                console.log(err.message);
-                res.json({ message: 'Invalid token', data: null, status: 'error' });
-                
+                throw createError(commonError.UNAUTHORIZED, { message: 'Invalid token'});
             }
             else next();
         });

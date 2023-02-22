@@ -1,8 +1,6 @@
 const mongoose = require('mongoose');
 const mongooseDelete = require('mongoose-delete');
 
-const Company = require('./company');
-const Voter = require('./voter');
 const Schema = mongoose.Schema;
 
 const Ballot = new Schema(

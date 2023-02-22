@@ -19,7 +19,10 @@ const Company = new Schema(
             type: String,
             required: true,
         },
-        
+        election: {
+            type: Schema.Types.ObjectId,
+            ref: 'Election',
+        }
     },
     { timestamps: true },
 );
